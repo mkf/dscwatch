@@ -71,22 +71,22 @@ app.get("/messages/:after", auth_instore, (req, res) => {
     let msg = prv[req.token].channel.messages;
     var acc = {};
     let after = req.params.after;
-    var before = undefined;
-    function fetch(messages) {
-        let lastp = messages.size;
-        messages = messages.map(v => [v.createdAt, v.cleanContent, v.id, v.createdTimestamp]);
-        // messages = messages.array;
-        acc[before] = messages;
-        console.log(messages);
-        let last = messages.at(0);
+    var beforeID = undefined;
+    var beforeAt = undefined;
+    function fetch(messagesColl) {
+        let lastp = messagesColl.size;
+        let messages = messagesColl.map(v => [v.createdAt, v.cleanContent, v.id, v.createdTimestamp]);
+        acc[beforeAt] = messages;
+        let last = messages.at(lastp-1);
         console.log(lastp, last);
-        before = last[2];
-        console.log(before, messages);
-        console.log(before, after);
-        if(before>after) msg.fetch({before: before}).then(fetch)
+        beforeID = last[2];
+        beforeAt = last[0];
+        console.log(messages, messagesColl);
+        console.log(beforeAt, beforeID, after);
+        if(!(messagesColl.has(after))) msg.fetch({limit: 50, before: beforeID}).then(fetch)
         else res.json(acc);
     }
-    msg.fetch({after: after}).then(fetch);
+    msg.fetch({limit: 50}).then(fetch);
 })
 
 app.delete("/", auth_instore, (req, res) => {
